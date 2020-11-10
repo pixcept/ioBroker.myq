@@ -67,13 +67,13 @@ const deviceAttributes = {
 	updated_date: {
 		sect: 'info',
 		name: 'Last update',
-		type: 'date',
+		type: 'number',
 		role: 'date'
 	},
 	last_status: {
 		sect: 'info',
 		name: 'Last status',
-		type: 'date',
+		type: 'number',
 		role: 'date'
 	},
 	passthrough_interval: {
@@ -313,6 +313,7 @@ function processDeviceState(device) {
 
 				attr = {
 					'name': attr,
+					'sect': 'info',
 					'type': typeof origvalue,
 					'role': 'text',
 					'states': null
@@ -348,7 +349,7 @@ function processDeviceState(device) {
 					attr['states'] = null;
 				}
 				// attribute exists
-				ioBLib.setOrUpdateState(objId + '.' + attrId, attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
+				ioBLib.setOrUpdateState(objId + '.' + attr['sect'] + '.' + attrId, attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
 			}
 		}
 	});
