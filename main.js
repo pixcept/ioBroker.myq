@@ -3,7 +3,9 @@
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const ioBLib = require('@strathcole/iob-lib').ioBLib;
 
-const myq = require('./lib/myq');
+const MyQLib = require('myq-api');
+
+const MyQ = new MyQLib();
 
 const adapterName = require('./package.json').name.split('.').pop();
 
@@ -173,25 +175,13 @@ function startAdapter(options) {
 		}
 	});
 
-	adapter.on('message', function(obj) {
-		if(typeof obj === 'object' && obj.message) {
-			if(obj.command === 'send') {
-				adapter.log.debug('send command');
-
-				if(obj.callback) {
-					adapter.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-				}
-			}
-		}
-	});
-
 	adapter.on('ready', function() {
 		if(!adapter.config.username) {
 			adapter.log.warn('[START] Username not set');
 		} else if(!adapter.config.password) {
 			adapter.log.warn('[START] Password not set');
 		} else {
-			adapter.log.info('[START] Starting MyQ adapter');
+			adapter.log.info('[START] Starting myq adapter');
 			adapter.getForeignObject('system.config', (err, obj) => {
 				if (obj && obj.native && obj.native.secret) {
 					//noinspection JSUnresolvedVariable
@@ -224,12 +214,11 @@ function main() {
 
 	adapter.subscribeStates('*');
 
-	controller = new myq.MyQ(deviceUsername, devicePassword, adapter);
-
-	controller.login(function(err, obj) {
-		if(!err) {
-			pollStates();
-		}
+	MyQ.login(deviceUsername, devicePassword).then(function(result) {
+		adapter.setState('info.connection', true, true);
+		pollStates();
+	}).catch(function(error) {
+		console.error(error);
 	});
 }
 
@@ -241,13 +230,11 @@ function pollStates() {
 	}
 
 	ioBLib.setOrUpdateObject('devices', 'Devices', 'channel', function() {
-		controller.getDevices(function(err, obj) {
-			if(err || !obj.devices) {
-				adapter.log.warn('Failed getting devices: ' + JSON.stringify(obj));
-				return;
-			}
-
-			processDeviceStates(obj.devices);
+		MyQ.getDevices().then(function(result) {
+			processDeviceStates(result.devices);
+		}).catch(function(error) {
+			console.error(error);
+			return;
 		});
 	});
 
@@ -262,80 +249,80 @@ function processDeviceStates(devices) {
 	}
 }
 
-function getMyQDeviceAttribute(device, key) {
-	if(!device || !device.Attributes || !device.Attributes.length) {
+function getmyqDeviceAttribute(device, key) {
+	if(!device || !device.state) {
 		return null;
 	}
 
-	let attr;
-	for(let i = 0; i < device.Attributes.length; i++) {
-		attr = device.Attributes[i];
-		if(!attr.AttributeDisplayName) {
-			continue;
-		} else if(attr.AttributeDisplayName === key) {
-			return {
-				value: attr.Value,
-				updated: attr.UpdatedTime
-			};
-		}
+	if(!device.state[key]) {
+		return null;
 	}
-	return null;
+
+	return {
+		value: device.state[key],
+		updated: device.state['last_update']
+	};
 }
 
 function processDeviceState(device) {
-	// create or update base device obj
-	if(!device.MyQDeviceId) {
-		adapter.log.warn('Device has no MyQDeviceId');
+	if(!device.serial_number) {
+		adapter.log.warn('Serial number of device missing.');
 		adapter.log.debug(JSON.stringify(device));
 		return;
 	}
 
-	//adapter.log.info(JSON.stringify(device));
 
-	let objId = 'devices.' + device.MyQDeviceId;
-	let objName = getMyQDeviceAttribute(device, 'desc');
+	let objId = 'devices.' + device.serial_number;
+	let objName = getmyqDeviceAttribute(device, 'name');
 	if(!objName || !objName.value) {
 		objName = {
-			value: objId
+			value: device.serial_number
 		};
 	}
 	ioBLib.setOrUpdateObject(objId, objName.value, 'device', function() {
 		// process attributes
-		if(device.RegistrationDateTime) {
-			ioBLib.setOrUpdateState(objId + '.info.RegistrationDateTime', 'RegistrationDateTime', (new Date(device.RegistrationDateTime)).getTime(), '', 'number', 'date');
+		if(device.created_date) {
+			ioBLib.setOrUpdateState(objId + '.info.RegistrationDateTime', 'RegistrationDateTime', (new Date(device.created_date)).getTime(), '', 'number', 'date');
 		}
-		ioBLib.setOrUpdateState(objId + '.info.MyQDeviceTypeId', 'MyQ device type', device.MyQDeviceTypeId, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.MyQDeviceTypeName', 'MyQ device type', device.MyQDeviceTypeName, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.SerialNumber', 'Serial number', device.SerialNumber, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.UpdatedDate', 'Last update time', (new Date(device.UpdatedDate)).getTime(), '', 'number', 'date');
+		//ioBLib.setOrUpdateState(objId + '.info.myqDeviceTypeId', 'myq device type', device.myqDeviceTypeId, '', 'string', 'text');
+		ioBLib.setOrUpdateState(objId + '.info.myqDeviceTypeName', 'myq device type', device.device_type, '', 'string', 'text');
+		ioBLib.setOrUpdateState(objId + '.info.SerialNumber', 'Serial number', device.serial_number, '', 'string', 'text');
+		ioBLib.setOrUpdateState(objId + '.info.UpdatedDate', 'Last update time', (new Date(device.last_update)).getTime(), '', 'number', 'date');
 
-		let doorState = getMyQDeviceAttribute(device, 'doorstate');
+		let doorState = getmyqDeviceAttribute(device, 'door_state');
 		if(null !== doorState) {
-			ioBLib.setOrUpdateState(objId + '.states.moving', 'Door moving', (doorState.value == '4' || doorState.value == '5' || doorState.value == '8' ? true : false), '', 'boolean', 'indicator.moving');
+			//ioBLib.setOrUpdateState(objId + '.states.moving', 'Door moving', (doorState.value == '4' || doorState.value == '5' || doorState.value == '8' ? true : false), '', 'boolean', 'indicator.moving');
 			ioBLib.setOrUpdateState(objId + '.commands.open', 'Open door', false, '', 'boolean', 'button.open');
 			ioBLib.setOrUpdateState(objId + '.commands.close', 'Close door', false, '', 'boolean', 'button.close');
-		} else if(null !== getMyQDeviceAttribute(device, 'lightstate')) {
+		} else if(null !== getmyqDeviceAttribute(device, 'light_state')) {
 			ioBLib.setOrUpdateState(objId + '.commands.on', 'Switch on', false, '', 'boolean', 'button.on');
 			ioBLib.setOrUpdateState(objId + '.commands.off', 'Switch off', false, '', 'boolean', 'button.off');
 		}
 
 		let attr;
 		let attrValue;
-		for(let attrId in deviceAttributes) {
-			attr = deviceAttributes[attrId];
-			attrValue = getMyQDeviceAttribute(device, attrId);
+		for(let attr in device.state) {
+			attrValue = getmyqDeviceAttribute(device, attr);
 			if(null !== attrValue) {
 				let origvalue = attrValue.value;
+
+				attr = {
+					'name': attr,
+					'type': typeof origvalue,
+					'role': 'text',
+					'states': null
+				};
+
+
 				if(attr['type'] === 'number' && attrValue.value.match(/^[1-9][0-9]*(\.[0-9]+)?$/)) {
 					if(attrValue.value.indexOf('.') > -1) {
 						attrValue.value = parseFloat(attrValue.value);
 					} else {
 						attrValue.value = parseInt(attrValue.value, 10);
 					}
-				} else if(attrValue.value.toLowerCase() === 'true' || (attr['type'] === 'boolean' && attrValue.value == '1')) {
-					attrValue.value = true;
-				} else if(attrValue.value.toLowerCase() === 'false' || (attr['type'] === 'boolean' && attrValue.value == '0')) {
-					attrValue.value = false;
+					attr['role'] = 'value';
+				} else if(attr['type'] === 'boolean') {
+					attr['role'] = 'indicator';
 				}
 
 				if(!attrValue.value && attrValue.value !== 0 && attrValue.value !== false) {
@@ -350,7 +337,7 @@ function processDeviceState(device) {
 					attr['states'] = null;
 				}
 				// attribute exists
-				ioBLib.setOrUpdateState(objId + '.' + attr['sect'] + '.' + attrId, attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
+				ioBLib.setOrUpdateState(objId + '.' + attr['name'], attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
 			}
 		}
 	});
@@ -372,18 +359,26 @@ function processStateChange(id, value) {
 			adapter.log.warn('Found no valid device id in state ' + id);
 			return;
 		}
-		controller.changeDoorState(deviceId, cmd, function(err, obj) {
-			if(err) {
-				adapter.log.warn('Failed ' + cmd + ' door ' + deviceId + ': ' + JSON.stringify(obj));
-			}
-			adapter.setState(id, false, true);
-			if(polling) {
-				clearTimeout(polling);
-			}
-			polling = setTimeout(function() {
-				pollStates();
-			}, 2000);
+
+		if(cmd === 'open') {
+			cmd = MyQLib.actions.door.OPEN;
+		} else {
+			cmd = MyQLib.actions.door.CLOSE;
+		}
+
+		MyQ.setDoorState(deviceId, cmd).then(function(result) {
+			adapter.log.info('Cmd ' + cmd + ' sent to ' + deviceId);
+		}).catch(function(error) {
+			console.error(error);
 		});
+
+		adapter.setState(id, false, true);
+		if(polling) {
+			clearTimeout(polling);
+		}
+		polling = setTimeout(function() {
+			pollStates();
+		}, 2000);
 	} else if(id.match(/\.commands\.(on|off)$/)) {
 		let matches = id.match(/^devices\.([^\.]+)\.commands\.(on|off)$/);
 		if(!matches) {
@@ -397,18 +392,26 @@ function processStateChange(id, value) {
 			adapter.log.warn('Found no valid device id in state ' + id);
 			return;
 		}
-		controller.changeLampState(deviceId, cmd, function(err, obj) {
-			if(err) {
-				adapter.log.warn('Failed switch ' + cmd + ' lamp ' + deviceId + ': ' + JSON.stringify(obj));
-			}
-			adapter.setState(id, false, true);
-			if(polling) {
-				clearTimeout(polling);
-			}
-			polling = setTimeout(function() {
-				pollStates();
-			}, 2000);
+
+		if(cmd === 'on') {
+			cmd = MyQLib.actions.light.TURN_ON;
+		} else {
+			cmd = MyQLib.actions.light.TURN_OFF;
+		}
+
+		MyQ.setLightState(deviceId, cmd).then(function(result) {
+
+		}).catch(function(error) {
+			adapter.log.warn('Failed switch ' + cmd + ' lamp ' + deviceId + ': ' + JSON.stringify(error));
 		});
+
+		adapter.setState(id, false, true);
+		if(polling) {
+			clearTimeout(polling);
+		}
+		polling = setTimeout(function() {
+			pollStates();
+		}, 2000);
 	} else {
 		adapter.log.warn('Unknown id for StateChange with ack=false: ' + id);
 	}

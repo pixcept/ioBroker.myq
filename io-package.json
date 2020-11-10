@@ -1,8 +1,11 @@
 {
 	"common": {
 		"name": "myq",
-		"version": "0.1.2",
+		"version": "0.2.0",
 		"news": {
+			"0.2.0": {
+				"en": "Switched to myq-api library"
+			},
 			"0.1.2": {
 				"en": "Poll states after sending command",
 				"de": "Abfragestatus nach dem Senden des Befehls",
