@@ -9,57 +9,32 @@ const MyQ = new MyQLib();
 
 const adapterName = require('./package.json').name.split('.').pop();
 
-/*const deviceAttributes = {
+const deviceAttributes = {
 	online: {
 		sect: 'info',
 		name: 'Device is online',
 		type: 'boolean',
 		role: 'indicator'
 	},
-	desc: {
-		sect: 'info',
-		name: 'Device name',
-		type: 'string',
-		role: 'text'
-	},
-	doorstate: {
+	door_state: {
 		sect: 'states',
 		name: 'Door state',
-		type: 'number',
-		role: 'value.door',
-		states: {
-			'1': 'open',
-			'2': 'closed',
-			'3': 'stopped',
-			'4': 'opening',
-			'5': 'closing',
-			'8': 'moving',
-			'9': 'not closed'
-		}
+		type: 'string',
+		role: 'value.door'
 	},
-	lightstate: {
+	light_state: {
 		sect: 'states',
 		name: 'Light state',
 		type: 'boolean',
-		role: 'indicator.light',
-		states: {
-			'0': 'off',
-			'1': 'on'
-		}
+		role: 'indicator.light'
 	},
-	addedtime: {
-		sect: 'info',
-		name: 'Added at',
-		type: 'number',
-		role: 'date'
-	},
-	isunattendedopenallowed: {
+	is_unattended_open_allowed: {
 		sect: 'info',
 		name: 'Allow unattended open',
 		type: 'boolean',
 		role: 'indicator'
 	},
-	isunattendedcloseallowed: {
+	is_unattended_close_allowed: {
 		sect: 'info',
 		name: 'Allow unattended close',
 		type: 'boolean',
@@ -71,55 +46,85 @@ const adapterName = require('./package.json').name.split('.').pop();
 		type: 'string',
 		role: 'text'
 	},
-	is_gdo_lock_connected: {
-		sect: 'info',
-		name: 'GDO lock connected',
-		type: 'boolean',
-		role: 'indicator'
-	},
-	attached_work_light_error_present: {
-		sect: 'info',
-		name: 'Work light error',
-		type: 'boolean',
-		role: 'indicator.error'
-	},
-	learnmodestate: {
+	lear: {
 		sect: 'states',
 		name: 'Learn mode',
 		type: 'boolean',
 		role: 'indicator'
 	},
-	numdevices: {
+	physical_devices: {
 		sect: 'info',
 		name: 'Connected devices',
 		type: 'number',
 		role: 'value.info'
 	},
-	fwver: {
+	firmware_version: {
 		sect: 'info',
 		name: 'Firmware version',
 		type: 'string',
 		role: 'text'
 	},
-	IsFirmwareCurrent: {
-		sect: 'states',
-		name: 'Firmware up to date',
-		type: 'boolean',
-		role: 'indicator'
+	updated_date: {
+		sect: 'info',
+		name: 'Last update',
+		type: 'date',
+		role: 'date'
 	},
-	ishomekitcapable: {
-		sect: 'states',
-		name: 'Homekit capable',
-		type: 'boolean',
-		role: 'indicator'
+	last_status: {
+		sect: 'info',
+		name: 'Last status',
+		type: 'date',
+		role: 'date'
 	},
-	ishomekitactive: {
-		sect: 'states',
-		name: 'Homekit active',
-		type: 'boolean',
-		role: 'indicator'
+	passthrough_interval: {
+		sect: 'info',
+		name: 'Passthrough interval',
+		type: 'string',
+		role: 'text'
+	},
+	invalid_shutout_period: {
+		sect: 'info',
+		name: 'Interval',
+		type: 'string',
+		role: 'text'
+	},
+	invalid_credential_window: {
+		sect: 'info',
+		name: 'Interval',
+		type: 'string',
+		role: 'text'
+	},
+	door_ajar_interval: {
+		sect: 'info',
+		name: 'Interval',
+		type: 'string',
+		role: 'text'
+	},
+	close: {
+		sect: 'info',
+		name: 'Close uri',
+		type: 'string',
+		role: 'text'
+	},
+	open: {
+		sect: 'info',
+		name: 'Open uri',
+		type: 'string',
+		role: 'text'
+	},
+	on: {
+		sect: 'info',
+		name: 'Turn on uri',
+		type: 'string',
+		role: 'text'
+	},
+	off: {
+		sect: 'info',
+		name: 'Shut off uri',
+		type: 'string',
+		role: 'text'
 	}
-};*/
+};
 
 let adapter;
 var deviceUsername;
@@ -127,7 +132,6 @@ var devicePassword;
 
 let polling;
 let pollingTime;
-let controller;
 
 function startAdapter(options) {
 	options = options || {};
@@ -313,7 +317,6 @@ function processDeviceState(device) {
 					'states': null
 				};
 
-
 				if(attr['type'] === 'number' && attrValue.value.match(/^[1-9][0-9]*(\.[0-9]+)?$/)) {
 					if(attrValue.value.indexOf('.') > -1) {
 						attrValue.value = parseFloat(attrValue.value);
@@ -323,6 +326,13 @@ function processDeviceState(device) {
 					attr['role'] = 'value';
 				} else if(attr['type'] === 'boolean') {
 					attr['role'] = 'indicator';
+				}
+
+				if(deviceAttributes[attr.name]) {
+					let tmp = deviceAttributes[attr.name];
+					attr['type'] = tmp['type'];
+					attr['role'] = tmp['role'];
+					attr['name'] = tmp['name'];
 				}
 
 				if(!attrValue.value && attrValue.value !== 0 && attrValue.value !== false) {
