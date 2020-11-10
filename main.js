@@ -309,6 +309,7 @@ function processDeviceState(device) {
 			attrValue = getmyqDeviceAttribute(device, attr);
 			if(null !== attrValue) {
 				let origvalue = attrValue.value;
+				let attrId = attr;
 
 				attr = {
 					'name': attr,
@@ -347,7 +348,7 @@ function processDeviceState(device) {
 					attr['states'] = null;
 				}
 				// attribute exists
-				ioBLib.setOrUpdateState(objId + '.' + attr['name'], attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
+				ioBLib.setOrUpdateState(objId + '.' + attrId, attr['name'], attrValue.value, '', attr['type'], attr['role'], attr['states']);
 			}
 		}
 	});
