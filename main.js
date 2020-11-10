@@ -9,7 +9,7 @@ const MyQ = new MyQLib();
 
 const adapterName = require('./package.json').name.split('.').pop();
 
-const deviceAttributes = {
+/*const deviceAttributes = {
 	online: {
 		sect: 'info',
 		name: 'Device is online',
@@ -119,7 +119,7 @@ const deviceAttributes = {
 		type: 'boolean',
 		role: 'indicator'
 	}
-};
+};*/
 
 let adapter;
 var deviceUsername;
