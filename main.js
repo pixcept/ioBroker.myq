@@ -42,7 +42,7 @@ const deviceAttributes = {
 	},
 	name: {
 		sect: 'info',
-		name: 'DeviceName',
+		name: 'Device Name',
 		type: 'string',
 		role: 'text'
 	},
@@ -73,6 +73,12 @@ const deviceAttributes = {
 	last_status: {
 		sect: 'info',
 		name: 'Last status',
+		type: 'number',
+		role: 'date'
+	},
+	last_update: {
+		sect: 'info',
+		name: 'Last update',
 		type: 'number',
 		role: 'date'
 	},
@@ -286,12 +292,11 @@ function processDeviceState(device) {
 	ioBLib.setOrUpdateObject(objId, objName.value, 'device', function() {
 		// process attributes
 		if(device.created_date) {
-			ioBLib.setOrUpdateState(objId + '.info.RegistrationDateTime', 'RegistrationDateTime', (new Date(device.created_date)).getTime(), '', 'number', 'date');
+			//ioBLib.setOrUpdateState(objId + '.info.RegistrationDateTime', 'RegistrationDateTime', (new Date(device.created_date)).getTime(), '', 'number', 'date');
 		}
 		//ioBLib.setOrUpdateState(objId + '.info.myqDeviceTypeId', 'myq device type', device.myqDeviceTypeId, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.myqDeviceTypeName', 'myq device type', device.device_type, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.SerialNumber', 'Serial number', device.serial_number, '', 'string', 'text');
-		ioBLib.setOrUpdateState(objId + '.info.UpdatedDate', 'Last update time', (new Date(device.last_update)).getTime(), '', 'number', 'date');
+		ioBLib.setOrUpdateState(objId + '.info.device_type', 'myq device type', device.device_type, '', 'string', 'text');
+		ioBLib.setOrUpdateState(objId + '.info.serial_number', 'Serial number', device.serial_number, '', 'string', 'text');
 
 		let doorState = getmyqDeviceAttribute(device, 'door_state');
 		if(null !== doorState) {
