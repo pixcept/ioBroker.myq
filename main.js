@@ -210,6 +210,28 @@ function startAdapter(options) {
 }
 
 
+function doRefreshDevices(callback) {
+	MyQ.refreshDevices().then(function(result) {
+		adapter.log.debug('Result of refresh devices is ' + result);
+		if(result && MyQ.accounts.length) {
+			adapter.setState('info.connection', true, true);
+			callback();
+		} else {
+			adapter.setState('info.connection', false, true);
+			adapter.log.error('Could not get device info.');
+			if(!MyQ.accounts.length) {
+				adapter.log.error('It seems that login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
+			}
+			setTimeout(function() {
+				adapter.log.info('Retrying refresh devices (30 seconds past)');
+				doRefreshDevices(callback);
+			}, 30000);
+		}
+	}).catch(function(error) {
+		console.error(error);
+	});
+}
+
 function main() {
 	deviceUsername = adapter.config.username;
 	devicePassword = adapter.config.password;
@@ -226,22 +248,8 @@ function main() {
 
 	MyQ = new myQApi(deviceUsername, devicePassword, adapter.log);
 
-	MyQ.refreshDevices().then(function(result) {
-		adapter.log.debug('Result of refresh devices is ' + result);
-		if(result && MyQ.accounts.length) {
-			adapter.setState('info.connection', true, true);
-			pollStates();
-		} else {
-			adapter.log.error('Could not get device info.');
-			if(!MyQ.accounts.length) {
-				adapter.log.error('It seems that login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
-			}
-			setTimeout(function() {
-				adapter.terminate && adapter.terminate() || process.exit();
-			}, 2000);
-		}
-	}).catch(function(error) {
-		console.error(error);
+	doRefreshDevices(function() {
+		pollStates();
 	});
 }
 
@@ -253,27 +261,13 @@ function pollStates() {
 	}
 
 	ioBLib.setOrUpdateObject('devices', 'Devices', 'channel', function() {
-		MyQ.refreshDevices().then(function(result) {
-			if(!result || !MyQ.accounts.length) {
-				adapter.log.error('Could not get device info.');
-				if(!MyQ.accounts.length) {
-					adapter.log.error('It seems that login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
-					setTimeout(function() {
-						adapter.terminate && adapter.terminate() || process.exit();
-					}, 2000);
-				}
-			} else {
-				processDeviceStates(MyQ.devices);
-			}
-		}).catch(function(error) {
-			console.error(error);
-			return;
+		doRefreshDevices(function() {
+			processDeviceStates(MyQ.devices);
+			polling = setTimeout(function() {
+				pollStates();
+			}, pollingTime);
 		});
 	});
-
-	polling = setTimeout(function() {
-		pollStates();
-	}, pollingTime);
 }
 
 function processDeviceStates(devices) {
