@@ -3,7 +3,7 @@
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const ioBLib = require('@strathcole/iob-lib').ioBLib;
 
-const MyQLib = require("@hjdhjd/myq");
+const { myQApi } = require("@hjdhjd/myq");
 
 let MyQ;
 
@@ -224,11 +224,22 @@ function main() {
 
 	adapter.subscribeStates('*');
 
-	MyQ = new MyQLib(deviceUsername, devicePassword);
+	MyQ = new myQApi(deviceUsername, devicePassword, adapter.log);
 
 	MyQ.refreshDevices().then(function(result) {
-		adapter.setState('info.connection', true, true);
-		pollStates();
+		adapter.log.debug('Result of refresh devices is ' + result);
+		if(result && MyQ.accounts.length) {
+			adapter.setState('info.connection', true, true);
+			pollStates();
+		} else {
+			adapter.log.error('Could not get device info.');
+			if(!MyQ.accounts.length) {
+				adapter.log.error('It seems that login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
+			}
+			setTimeout(function() {
+				adapter.terminate && adapter.terminate() || process.exit();
+			}, 2000);
+		}
 	}).catch(function(error) {
 		console.error(error);
 	});
@@ -243,7 +254,17 @@ function pollStates() {
 
 	ioBLib.setOrUpdateObject('devices', 'Devices', 'channel', function() {
 		MyQ.refreshDevices().then(function(result) {
-			processDeviceStates(MyQ.devices);
+			if(!result || !MyQ.accounts.length) {
+				adapter.log.error('Could not get device info.');
+				if(!MyQ.accounts.length) {
+					adapter.log.error('It seems that login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
+					setTimeout(function() {
+						adapter.terminate && adapter.terminate() || process.exit();
+					}, 2000);
+				}
+			} else {
+				processDeviceStates(MyQ.devices);
+			}
 		}).catch(function(error) {
 			console.error(error);
 			return;
@@ -362,19 +383,6 @@ function processDeviceState(device) {
 	});
 }
 
-function getMyQDevice(deviceId) {
-	let MyQDevice = null;
-
-	for(let dev of MyQ.devices) {
-		if(dev.serial_number === deviceId) {
-			MyQDevice = dev;
-			break;
-		}
-	}
-
-	return MyQDevice;
-}
-
 function processStateChange(id, value) {
 	adapter.log.debug('StateChange: ' + JSON.stringify([id, value]));
 
@@ -392,20 +400,20 @@ function processStateChange(id, value) {
 			return;
 		}
 
-		let MyQDevice = getMyQDevice(deviceId);
+		let MyQDevice = MyQ.getDevice(deviceId);
 		if(!MyQDevice) {
 			adapter.log.warn('Could not find device ' + deviceId + ' in devices list.');
 			return;
 		}
 
 		if(cmd === 'open') {
-			cmd = MyQLib.actions.door.OPEN;
+			cmd = myQApi.actions.door.OPEN;
 		} else {
-			cmd = MyQLib.actions.door.CLOSE;
+			cmd = myQApi.actions.door.CLOSE;
 		}
 
 		MyQ.execute(MyQDevice, cmd).then(function(result) {
-			adapter.log.info('Cmd ' + cmd + ' sent to ' + deviceId);
+			adapter.log.info('Cmd ' + cmd + ' sent to ' + deviceId + ' result is ' + result);
 		}).catch(function(error) {
 			console.error(error);
 		});
@@ -432,18 +440,20 @@ function processStateChange(id, value) {
 		}
 
 		if(cmd === 'on') {
-			cmd = MyQLib.actions.light.TURN_ON;
+			cmd = myQApi.actions.light.TURN_ON;
 		} else {
-			cmd = MyQLib.actions.light.TURN_OFF;
+			cmd = myQApi.actions.light.TURN_OFF;
 		}
 
-		let MyQDevice = getMyQDevice(deviceId);
+		let MyQDevice = MyQ.getDevice(deviceId);
 		if(!MyQDevice) {
 			adapter.log.warn('Could not find device ' + deviceId + ' in devices list.');
 			return;
 		}
 		MyQ.executeLightState(MyQDevice, cmd).then(function(result) {
-
+			if(!result) {
+				adapter.log.warn('Failed switch ' + cmd + ' lamp ' + deviceId + ': ' + JSON.stringify(error));
+			}
 		}).catch(function(error) {
 			adapter.log.warn('Failed switch ' + cmd + ' lamp ' + deviceId + ': ' + JSON.stringify(error));
 		});

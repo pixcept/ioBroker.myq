@@ -1,8 +1,11 @@
 {
 	"common": {
 		"name": "myq",
-		"version": "0.2.0",
+		"version": "0.3.0",
 		"news": {
+			"0.3.0": {
+				"en": "Switched to myq library @hjdhjd/myq"
+			},
 			"0.2.0": {
 				"en": "Switched to myq-api library"
 			},
