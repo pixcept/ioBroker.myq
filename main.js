@@ -401,9 +401,9 @@ function processStateChange(id, value) {
 		}
 
 		if(cmd === 'open') {
-			cmd = myQApi.actions.door.OPEN;
+			cmd = 'open';
 		} else {
-			cmd = myQApi.actions.door.CLOSE;
+			cmd = 'close';
 		}
 
 		MyQ.execute(MyQDevice, cmd).then(function(result) {
@@ -434,9 +434,9 @@ function processStateChange(id, value) {
 		}
 
 		if(cmd === 'on') {
-			cmd = myQApi.actions.light.TURN_ON;
+			cmd = 'on';
 		} else {
-			cmd = myQApi.actions.light.TURN_OFF;
+			cmd = 'off';
 		}
 
 		let MyQDevice = MyQ.getDevice(deviceId);
