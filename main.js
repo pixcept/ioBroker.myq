@@ -3,9 +3,9 @@
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const ioBLib = require('@strathcole/iob-lib').ioBLib;
 
-const MyQLib = require('myq-api');
+const MyQLib = require("@hjdhjd/myq");
 
-const MyQ = new MyQLib();
+let MyQ;
 
 const adapterName = require('./package.json').name.split('.').pop();
 
@@ -224,7 +224,9 @@ function main() {
 
 	adapter.subscribeStates('*');
 
-	MyQ.login(deviceUsername, devicePassword).then(function(result) {
+	MyQ = new MyQLib(deviceUsername, devicePassword);
+
+	MyQ.refreshDevices().then(function(result) {
 		adapter.setState('info.connection', true, true);
 		pollStates();
 	}).catch(function(error) {
@@ -240,8 +242,8 @@ function pollStates() {
 	}
 
 	ioBLib.setOrUpdateObject('devices', 'Devices', 'channel', function() {
-		MyQ.getDevices().then(function(result) {
-			processDeviceStates(result.devices);
+		MyQ.refreshDevices().then(function(result) {
+			processDeviceStates(MyQ.devices);
 		}).catch(function(error) {
 			console.error(error);
 			return;
@@ -360,6 +362,19 @@ function processDeviceState(device) {
 	});
 }
 
+function getMyQDevice(deviceId) {
+	let MyQDevice = null;
+
+	for(let dev of MyQ.devices) {
+		if(dev.serial_number === deviceId) {
+			MyQDevice = dev;
+			break;
+		}
+	}
+
+	return MyQDevice;
+}
+
 function processStateChange(id, value) {
 	adapter.log.debug('StateChange: ' + JSON.stringify([id, value]));
 
@@ -377,13 +392,19 @@ function processStateChange(id, value) {
 			return;
 		}
 
+		let MyQDevice = getMyQDevice(deviceId);
+		if(!MyQDevice) {
+			adapter.log.warn('Could not find device ' + deviceId + ' in devices list.');
+			return;
+		}
+
 		if(cmd === 'open') {
 			cmd = MyQLib.actions.door.OPEN;
 		} else {
 			cmd = MyQLib.actions.door.CLOSE;
 		}
 
-		MyQ.setDoorState(deviceId, cmd).then(function(result) {
+		MyQ.execute(MyQDevice, cmd).then(function(result) {
 			adapter.log.info('Cmd ' + cmd + ' sent to ' + deviceId);
 		}).catch(function(error) {
 			console.error(error);
@@ -416,7 +437,12 @@ function processStateChange(id, value) {
 			cmd = MyQLib.actions.light.TURN_OFF;
 		}
 
-		MyQ.setLightState(deviceId, cmd).then(function(result) {
+		let MyQDevice = getMyQDevice(deviceId);
+		if(!MyQDevice) {
+			adapter.log.warn('Could not find device ' + deviceId + ' in devices list.');
+			return;
+		}
+		MyQ.executeLightState(MyQDevice, cmd).then(function(result) {
 
 		}).catch(function(error) {
 			adapter.log.warn('Failed switch ' + cmd + ' lamp ' + deviceId + ': ' + JSON.stringify(error));
