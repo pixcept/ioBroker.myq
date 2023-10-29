@@ -52,6 +52,7 @@ Not all states are available for all type of devices.
 ### 0.4.0
 
 -  Updated myq library @hjdhjd/myq to new major version
+-  minimum NodeJS version is now 18.x
 
 ### 0.3.1
 
