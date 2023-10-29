@@ -1,13 +1,16 @@
 'use strict';
 
-const utils = require('@iobroker/adapter-core'); // Get common adapter utils
-const ioBLib = require('@strathcole/iob-lib').ioBLib;
-
-const { myQApi } = require("@hjdhjd/myq");
+import * as pkg from '@iobroker/adapter-core'; // Get common adapter utils
+import { ioBLib } from '@strathcole/iob-lib';
+import { myQApi } from "@hjdhjd/myq";
+import packageJSON from './package.json' assert { type: 'json' };
 
 let MyQ;
+const { Adapter } = pkg.default;
 
-const adapterName = require('./package.json').name.split('.').pop();
+const adapterName = packageJSON.name.split('.').pop();
+console.log('Starting adapter ' + adapterName + ' in ' + process.cwd());
+console.log(Adapter, pkg.default);
 
 const deviceAttributes = {
 	online: {
@@ -145,7 +148,7 @@ function startAdapter(options) {
 		name: 'myq'
 	});
 
-	adapter = new utils.Adapter(options);
+	adapter = new Adapter(options);
 	ioBLib.init(adapter);
 
 	adapter.on('unload', function(callback) {
@@ -246,10 +249,24 @@ function main() {
 
 	adapter.subscribeStates('*');
 
-	MyQ = new myQApi(deviceUsername, devicePassword, adapter.log);
-
-	doRefreshDevices(function() {
-		pollStates();
+	MyQ = new myQApi(adapter.log);
+	MyQ.login(deviceUsername, devicePassword).then(function(result) {
+		adapter.log.debug('Result of login is ' + result);
+		if(result) {
+			adapter.log.info('Login successfull');
+			adapter.setState('info.connection', true, true);
+			adapter.log.debug('Starting refresh devices');
+			doRefreshDevices(function() {
+				pollStates();
+			});
+		} else {
+			adapter.log.error('Login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
+			adapter.setState('info.connection', false, true);
+		}
+	}).catch(function(error) {
+		adapter.log.error('Login failed. Either the server was unreachable or you used wrong credential. Please activate debug log to check.');
+		adapter.log.debug(error);
+		adapter.setState('info.connection', false, true);
 	});
 }
 
@@ -467,9 +484,9 @@ function processStateChange(id, value) {
 }
 
 // If started as allInOne/compact mode => return function to create instance
-if(module && module.parent) {
+/*if(module && module.parent) {
 	module.exports = startAdapter;
-} else {
+} else {*/
 	// or start the instance directly
 	startAdapter();
-} // endElse
+//} // endElse
