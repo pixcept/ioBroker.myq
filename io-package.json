@@ -85,6 +85,7 @@
 		],
 		"readme": "https://github.com/StrathCole/ioBroker.myq/blob/master/README.md",
 		"loglevel": "info",
+		"tier": 2,
 		"type": "iot-systems",
 		"connection-type": "cloud polling",
 		"license": "MIT",
