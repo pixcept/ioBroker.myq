@@ -87,7 +87,10 @@
 		"loglevel": "info",
 		"type": "iot-systems",
 		"connection-type": "cloud polling",
-		"license": "MIT",
+		"licenseInformation": {
+			"type": "free",
+			"license": "MIT"
+		},
 		"messagebox": true,
 		"materialize": true,
 		"enabled": false,
