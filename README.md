@@ -82,7 +82,7 @@ Not all states are available for all type of devices.
 
 The MIT License (MIT)
 
-Copyright (c) 2020 Marius Burkard
+Copyright (c) 2020-2026 Marius Burkard
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
