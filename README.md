@@ -78,6 +78,8 @@ Not all states are available for all type of devices.
 
 -   First running Version
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 The MIT License (MIT)
