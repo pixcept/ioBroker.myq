@@ -49,6 +49,10 @@ Not all states are available for all type of devices.
 
 ## Changelog
 
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 0.4.0
 
 -  Updated myq library @hjdhjd/myq to new major version

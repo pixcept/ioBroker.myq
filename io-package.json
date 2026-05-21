@@ -1,127 +1,130 @@
 {
-	"common": {
-		"name": "myq",
-		"version": "0.4.0",
-		"news": {
-			"0.4.0": {
-				"en": "Updated library @hjdhjd/myq to next major release\nminimum NodeJS version is now 18.x"
-			},
-			"0.3.1": {
-				"en": "Updated library @hjdhjd/myq"
-			},
-			"0.3.0": {
-				"en": "Switched to myq library @hjdhjd/myq"
-			},
-			"0.2.0": {
-				"en": "Switched to myq-api library"
-			},
-			"0.1.2": {
-				"en": "Poll states after sending command",
-				"de": "Abfragestatus nach dem Senden des Befehls",
-				"ru": "Опрос состояний после отправки команды",
-				"pt": "Estados de pesquisa após enviar o comando",
-				"nl": "Poll-status na het verzenden van de opdracht",
-				"fr": "Interroger les états après l'envoi de la commande",
-				"it": "Stati del sondaggio dopo l'invio del comando",
-				"es": "Estados de encuesta después de enviar el comando",
-				"pl": "Sonduj stany po wysłaniu polecenia",
-				"zh-cn": "发送命令后的轮询状态"
-			},
-			"0.1.1": {
-				"en": "Code rework and several bugs fixed",
-				"de": "Code-Überarbeitung und mehrere Fehler behoben",
-				"ru": "Переработка кода и исправление нескольких ошибок",
-				"pt": "Retrabalho de código e vários bugs corrigidos",
-				"nl": "Code herwerken en verschillende bugs opgelost",
-				"fr": "Retouches de code et plusieurs bugs corrigés",
-				"it": "Rielaborazione del codice e correzione di diversi bug",
-				"es": "Retrabajo de código y varios errores corregidos",
-				"pl": "Poprawiono kod i naprawiono kilka błędów",
-				"zh-cn": "代码返工和修复的若干错误"
-			},
-			"0.1.0": {
-				"en": "Initial version",
-				"de": "Initiale Version",
-				"ru": "Первоначальный вариант",
-				"pt": "Versão inicial",
-				"nl": "Eerste versie",
-				"fr": "Version initiale",
-				"it": "Versione iniziale",
-				"es": "Versión inicial",
-				"pl": "Początkowa wersja",
-				"zh-cn": "初始版本"
-			}
-		},
-		"title": "MyQ",
-		"titleLang": {
-			"en": "MyQ"
-		},
-		"desc": {
-			"en": "Adapter to communicate with MyQ (Chamberlain/Liftmaster)",
-			"de": "Adapter zur Kommunikation mit MyQ (Chamberlain / Liftmaster)",
-			"ru": "Адаптер для связи с MyQ (Чемберлен / Лифтмастер)",
-			"pt": "Adaptador para se comunicar com MyQ (Chamberlain / Liftmaster)",
-			"nl": "Adapter om te communiceren met MyQ (Chamberlain / Liftmaster)",
-			"fr": "Adaptateur pour communiquer avec MyQ (Chamberlain / Liftmaster)",
-			"it": "Adattatore per comunicare con MyQ (Chamberlain / Liftmaster)",
-			"es": "Adaptador para comunicarse con MyQ (Chamberlain / Liftmaster)",
-			"pl": "Adapter do komunikacji z MyQ (Chamberlain / Liftmaster)",
-			"zh-cn": "与MyQ通信的适配器（Chamberlain / Liftmaster）"
-		},
-		"authors": [
-			"Marius Burkard <m.burkard@pixcept.de>"
-		],
-		"platform": "Javascript/Node.js",
-		"main": "main.js",
-		"mode": "daemon",
-		"icon": "myq-q.png",
-		"extIcon": "https://raw.githubusercontent.com/StrathCole/ioBroker.myq/master/admin/myq-q.png",
-		"keywords": [
-			"myq",
-			"garage",
-			"door",
-			"chamberlain",
-			"liftmaster"
-		],
-		"readme": "https://github.com/StrathCole/ioBroker.myq/blob/master/README.md",
-		"loglevel": "info",
-		"type": "iot-systems",
-		"connection-type": "cloud polling",
-		"license": "MIT",
-		"messagebox": true,
-		"materialize": true,
-		"enabled": false,
-		"compact": true,
-		"dependencies": [
-		]
-	},
-	"native": {
-		"username": "",
-		"password": "",
-		"pollinterval": 10000
-	},
-	"objects": [],
-	"instanceObjects": [
-		{
-			"_id": "info",
-			"type": "channel",
-			"common": {
-				"name": "Adapter-Information"
-			},
-			"native": {}
-		},
-		{
-			"_id": "info.connection",
-			"type": "state",
-			"common": {
-				"role": "indicator.connected",
-				"name": "Whether the adapter is connected to the gateway",
-				"type": "boolean",
-				"read": true,
-				"write": false,
-				"def": false
-			},
-			"native": {}
-		}
-	]
+  "common": {
+    "name": "myq",
+    "version": "0.4.0",
+    "news": {
+      "0.4.0": {
+        "en": "Updated library @hjdhjd/myq to next major release\nminimum NodeJS version is now 18.x"
+      },
+      "0.3.1": {
+        "en": "Updated library @hjdhjd/myq"
+      },
+      "0.3.0": {
+        "en": "Switched to myq library @hjdhjd/myq"
+      },
+      "0.2.0": {
+        "en": "Switched to myq-api library"
+      },
+      "0.1.2": {
+        "en": "Poll states after sending command",
+        "de": "Abfragestatus nach dem Senden des Befehls",
+        "ru": "Опрос состояний после отправки команды",
+        "pt": "Estados de pesquisa após enviar o comando",
+        "nl": "Poll-status na het verzenden van de opdracht",
+        "fr": "Interroger les états après l'envoi de la commande",
+        "it": "Stati del sondaggio dopo l'invio del comando",
+        "es": "Estados de encuesta después de enviar el comando",
+        "pl": "Sonduj stany po wysłaniu polecenia",
+        "zh-cn": "发送命令后的轮询状态"
+      },
+      "0.1.1": {
+        "en": "Code rework and several bugs fixed",
+        "de": "Code-Überarbeitung und mehrere Fehler behoben",
+        "ru": "Переработка кода и исправление нескольких ошибок",
+        "pt": "Retrabalho de código e vários bugs corrigidos",
+        "nl": "Code herwerken en verschillende bugs opgelost",
+        "fr": "Retouches de code et plusieurs bugs corrigés",
+        "it": "Rielaborazione del codice e correzione di diversi bug",
+        "es": "Retrabajo de código y varios errores corregidos",
+        "pl": "Poprawiono kod i naprawiono kilka błędów",
+        "zh-cn": "代码返工和修复的若干错误"
+      },
+      "0.1.0": {
+        "en": "Initial version",
+        "de": "Initiale Version",
+        "ru": "Первоначальный вариант",
+        "pt": "Versão inicial",
+        "nl": "Eerste versie",
+        "fr": "Version initiale",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Początkowa wersja",
+        "zh-cn": "初始版本"
+      }
+    },
+    "title": "MyQ",
+    "titleLang": {
+      "en": "MyQ"
+    },
+    "desc": {
+      "en": "Adapter to communicate with MyQ (Chamberlain/Liftmaster)",
+      "de": "Adapter zur Kommunikation mit MyQ (Chamberlain / Liftmaster)",
+      "ru": "Адаптер для связи с MyQ (Чемберлен / Лифтмастер)",
+      "pt": "Adaptador para se comunicar com MyQ (Chamberlain / Liftmaster)",
+      "nl": "Adapter om te communiceren met MyQ (Chamberlain / Liftmaster)",
+      "fr": "Adaptateur pour communiquer avec MyQ (Chamberlain / Liftmaster)",
+      "it": "Adattatore per comunicare con MyQ (Chamberlain / Liftmaster)",
+      "es": "Adaptador para comunicarse con MyQ (Chamberlain / Liftmaster)",
+      "pl": "Adapter do komunikacji z MyQ (Chamberlain / Liftmaster)",
+      "zh-cn": "与MyQ通信的适配器（Chamberlain / Liftmaster）"
+    },
+    "authors": [
+      "Marius Burkard <m.burkard@pixcept.de>"
+    ],
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "mode": "daemon",
+    "icon": "myq-q.png",
+    "extIcon": "https://raw.githubusercontent.com/StrathCole/ioBroker.myq/master/admin/myq-q.png",
+    "keywords": [
+      "myq",
+      "garage",
+      "door",
+      "chamberlain",
+      "liftmaster"
+    ],
+    "readme": "https://github.com/StrathCole/ioBroker.myq/blob/master/README.md",
+    "loglevel": "info",
+    "type": "iot-systems",
+    "connection-type": "cloud polling",
+    "license": "MIT",
+    "messagebox": true,
+    "materialize": true,
+    "enabled": false,
+    "compact": true,
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ]
+  },
+  "native": {
+    "username": "",
+    "password": "",
+    "pollinterval": 10000
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Adapter-Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Whether the adapter is connected to the gateway",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
